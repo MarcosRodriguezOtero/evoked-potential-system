@@ -1,0 +1,9 @@
+/build
+/sdkconfig.old
+*.bin
+*.elf
+*.map
+*.pyc
+*.log
+__pycache__/
+/settings
