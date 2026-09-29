@@ -1,5 +1,6 @@
-/build
-/sdkconfig.old
+build/
+sdkconfig.old
+components/signal_processing/host_test/sdkconfig
 .vscode/
 *.bin
 *.elf
