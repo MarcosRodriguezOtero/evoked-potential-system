@@ -58,7 +58,6 @@ Pico* detectarP25(double *signal,double *time,int tamano){
     printf("Se ha detectado la onda P25. Las latencias y amplitudes son:\n");
     for (int i = 0; i < 3 && i < filtered_count; i++) {
             picos_selec[i]=filtered_picos[i];
-            Pico b = filtered_picos[i];
             cuentaP25++;
             printf("Latencia: %.4f, Amplitud: %.7f\n", picos_selec[i].tiempo, picos_selec[i].valor);
     }
@@ -88,7 +87,6 @@ Pico* detectarN20(double *signal,double *time,int tamano,Pico* picosP25) {
     for (int i = 0; i < resultado.num_picos; i++) {
     	if (resultado.picos[i].tiempo >= 15.5 && resultado.picos[i].tiempo <= 29.0) {
     		filtered_picos[filtered_count++] = resultado.picos[i];
-    		Pico a= resultado.picos[i];
             printf("Pico %d: Valor = %.7f, Tiempo = %.7f\n", i + 1, resultado.picos[i].valor, resultado.picos[i].tiempo);
         }
     }
@@ -105,12 +103,10 @@ Pico* detectarN20(double *signal,double *time,int tamano,Pico* picosP25) {
         Pico maxN20=filtered_picos[0];
         Pico maxP25= picosP25[0];
         for (int i = 0; i < filtered_count; i++) {
-        		Pico a= filtered_picos[i];
         		printf("Pico  Valor = 7f, Tiempo =f\n");
 
         }
         for (int i = 0; i < filtered_count; i++) {
-        	double r = filtered_picos[i].tiempo;
             if (filtered_picos[i].tiempo < maxP25.tiempo){
             maxN20=filtered_picos[i];
             break;
