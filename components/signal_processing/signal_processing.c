@@ -6,8 +6,8 @@
 
 extern int cuentaP25;
 extern int campo;
-extern float numeros1[1000];
-extern float numeros2[1000];
+extern double numeros1[1000];
+extern double numeros2[1000];
 extern double t[1000];
 
 static int comparar_picos(const void *a, const void *b) {
