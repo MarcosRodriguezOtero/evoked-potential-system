@@ -1,5 +1,7 @@
-/build
-/sdkconfig.old
+build/
+sdkconfig.old
+components/signal_processing/host_test/sdkconfig
+.vscode/
 *.bin
 *.elf
 *.map
@@ -7,3 +9,4 @@
 *.log
 __pycache__/
 /settings
+.settings/
