@@ -9,3 +9,4 @@ components/signal_processing/host_test/sdkconfig
 *.log
 __pycache__/
 /settings
+.settings/
