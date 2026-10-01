@@ -6,6 +6,9 @@
 
 extern int cuentaP25;
 extern int campo;
+extern float numeros1[1000];
+extern float numeros2[1000];
+extern double t[1000];
 
 static int comparar_picos(const void *a, const void *b) {
     Pico *picoA = (Pico *)a;
@@ -218,3 +221,65 @@ void changeSign(double *vector) {
     }
     printf("signo cambiado");
 } 
+
+int algoritmo(void) {
+
+
+    //changeSign(numeros1);
+    //changeSign(numeros2);
+    Pico* picos_detec1= detectarP25(numeros1, t, 1000);
+    if (picos_detec1 == NULL) {
+        printf("No se detectaron picos.\n");
+        return 2;
+    }
+/*
+    double valor=0;
+    double tiempo=0;
+    for (int i=0; i<3;i++){
+    	valor=picos_detec1[i].valor;
+    	tiempo=picos_detec1[i].tiempo;
+    }*/
+    Pico* detec1N20=detectarN20(numeros1,t,1000,picos_detec1);
+	free(picos_detec1);
+	if (detec1N20 == NULL) {
+		printf("No se detectaron picos.\n");
+		return 3;
+	}
+
+	cuentaP25=0;
+    Pico* picos_detec2= detectarP25(numeros2, t, 1000);
+    if (picos_detec2 == NULL) {
+        printf("No se detectaron picos.\n");
+        free(detec1N20);
+        return 2;
+    }
+
+    Pico* detec2N20=detectarN20(numeros2,t,1000,picos_detec2);
+    free(picos_detec2);
+
+     if (detec2N20 == NULL) {
+        printf("No se detectaron picos.\n");
+        free(detec1N20);
+        return 3;
+    }
+
+    if (detec1N20[2].valor != detec2N20[2].valor) {
+        printf("Prueba inconclusa, por favor vuelva a repetir la prueba\n");
+        free(detec1N20);
+        free(detec2N20);
+        return 4;
+    } else if (detec1N20[2].valor == 1) {
+        printf("Se ha detectado la onda N20.\n");
+        free(detec1N20);
+        free(detec2N20);
+        return 5;
+    } else {
+        printf("No se ha detectado la onda N20\n");
+        free(detec1N20);
+        free(detec2N20);
+        return 6;
+    }
+
+
+    return 0;
+}

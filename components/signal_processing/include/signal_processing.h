@@ -32,4 +32,6 @@ Pico *detectarN20(
     Pico *picosP25
 );
 
+int algoritmo(void);
+
 #endif
