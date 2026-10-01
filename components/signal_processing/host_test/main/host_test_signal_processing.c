@@ -10,6 +10,8 @@
 int cuentaP25 = 0;
 int campo = 0;
 
+static const double DOUBLE_EPSILON = 1e-9;
+
 
 enum {
     CHANGE_SIGN_SAMPLE_COUNT = 1000,
@@ -299,6 +301,34 @@ static void test_detectarP25_rejects_all_peaks_when_time_vector_is_zero(void)
 }
 
 
+static void test_detectarP25_accumulates_cuentaP25_without_reset(void)
+{
+    double signal[] = {0.0, 4.0, 0.0};
+    double times[]  = {0.0, 25.0, 40.0};
+    cuentaP25 = 10;
+
+    Pico *peaks = detectarP25(signal, times, 3);
+
+    TEST_ASSERT_NOT_NULL(peaks);
+    TEST_ASSERT_EQUAL_INT(11, cuentaP25);
+    free(peaks);
+}
+
+
+static void test_detectarP25_increments_cuentaP25_by_selected_peaks(void)
+{
+    double signal[] = {0.0, 2.0, 0.0, 7.0, 0.0, 4.0, 0.0, 6.0, 0.0};
+    double times[]  = {20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0};
+    cuentaP25 = 5;
+
+    Pico *peaks = detectarP25(signal, times, 9);
+
+    TEST_ASSERT_NOT_NULL(peaks);
+    TEST_ASSERT_EQUAL_INT(8, cuentaP25);
+    free(peaks);
+}
+
+
 static void test_detectarN20_detects_peak_and_combines_amplitudes(void)
 {
     double signal[1000] = {0.0};
@@ -315,7 +345,7 @@ static void test_detectarN20_detects_peak_and_combines_amplitudes(void)
     TEST_ASSERT_NOT_NULL(result);
     TEST_ASSERT_EQUAL_DOUBLE(21.0, result[0].tiempo);
     TEST_ASSERT_EQUAL_DOUBLE(20.0, result[1].tiempo);
-    TEST_ASSERT_EQUAL_DOUBLE(0.6, result[1].valor);
+    TEST_ASSERT_DOUBLE_WITHIN(DOUBLE_EPSILON, 0.6, result[1].valor);
     TEST_ASSERT_EQUAL_DOUBLE(1.0, result[2].valor);
     TEST_ASSERT_EQUAL_DOUBLE(0.4, signal[200]);
     free(result);
@@ -443,7 +473,7 @@ static void test_detectarN20_selects_preceding_peak_and_nearest_P25(void)
     TEST_ASSERT_NOT_NULL(result);
     TEST_ASSERT_EQUAL_DOUBLE(20.0, result[1].tiempo);
     TEST_ASSERT_EQUAL_DOUBLE(22.0, result[0].tiempo);
-    TEST_ASSERT_EQUAL_DOUBLE(3.0, result[1].valor);
+    TEST_ASSERT_DOUBLE_WITHIN(DOUBLE_EPSILON, 3.0, result[1].valor);
     TEST_ASSERT_EQUAL_DOUBLE(1.0, result[2].valor);
     free(result);
 }
@@ -470,7 +500,7 @@ static void test_detectarN20_requires_P25_more_than_0_5_after_N20(void)
     TEST_ASSERT_NOT_NULL(result);
     TEST_ASSERT_EQUAL_DOUBLE(20.0, result[1].tiempo);
     TEST_ASSERT_EQUAL_DOUBLE(20.6, result[0].tiempo);
-    TEST_ASSERT_EQUAL_DOUBLE(2.0, result[1].valor);
+    TEST_ASSERT_DOUBLE_WITHIN(DOUBLE_EPSILON, 2.0, result[1].valor);
     TEST_ASSERT_EQUAL_DOUBLE(1.0, result[2].valor);
     free(result);
 }
@@ -502,6 +532,8 @@ int main(int argc, char **argv)
     RUN_TEST(test_detectarP25_includes_window_bounds_and_sorts_by_amplitude);
     RUN_TEST(test_detectarP25_returns_three_largest_peaks);
     RUN_TEST(test_detectarP25_rejects_all_peaks_when_time_vector_is_zero);
+    RUN_TEST(test_detectarP25_accumulates_cuentaP25_without_reset);
+    RUN_TEST(test_detectarP25_increments_cuentaP25_by_selected_peaks);
 
     // detectarN20 tests
     RUN_TEST(test_detectarN20_detects_peak_and_combines_amplitudes);
