@@ -10,3 +10,4 @@ components/signal_processing/host_test/sdkconfig
 __pycache__/
 /settings
 .settings/
+/build-host-signal-processing/

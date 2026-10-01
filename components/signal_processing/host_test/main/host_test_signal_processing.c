@@ -9,8 +9,8 @@
 
 int cuentaP25 = 0;
 int campo = 0;
-float numeros1[2000];
-float numeros2[2000];
+double numeros1[1000];
+double numeros2[1000];
 double t[1000];
 
 static const double DOUBLE_EPSILON = 1e-9;
@@ -511,8 +511,8 @@ static void test_detectarN20_requires_P25_more_than_0_5_after_N20(void)
 
 static void test_algoritmo_returns_2_no_peaks_when_first_P25_is_missing(void)
 {
-    double *signal1 = (double *)numeros1;
-    double *signal2 = (double *)numeros2;
+    double *signal1 = numeros1;
+    double *signal2 = numeros2;
     cuentaP25 = 0;
     campo = 0;
     for (int i = 0; i < 1000; i++) {
@@ -529,8 +529,8 @@ static void test_algoritmo_returns_2_no_peaks_when_first_P25_is_missing(void)
 
 static void test_algoritmo_returns_5_N20_detected_when_both_channels_detect_N20(void)
 {
-    double *signal1 = (double *)numeros1;
-    double *signal2 = (double *)numeros2;
+    double *signal1 = numeros1;
+    double *signal2 = numeros2;
     cuentaP25 = 0;
     campo = 0;
     for (int i = 0; i < 1000; i++) {
@@ -551,8 +551,8 @@ static void test_algoritmo_returns_5_N20_detected_when_both_channels_detect_N20(
 
 static void test_algoritmo_returns_4_inconclusive_when_channels_disagree(void)
 {
-    double *signal1 = (double *)numeros1;
-    double *signal2 = (double *)numeros2;
+    double *signal1 = numeros1;
+    double *signal2 = numeros2;
     cuentaP25 = 0;
     campo = 0;
     for (int i = 0; i < 1000; i++) {
@@ -573,8 +573,8 @@ static void test_algoritmo_returns_4_inconclusive_when_channels_disagree(void)
 
 static void test_algoritmo_returns_6_N20_not_detected_when_both_channels_reject_N20(void)
 {
-    double *signal1 = (double *)numeros1;
-    double *signal2 = (double *)numeros2;
+    double *signal1 = numeros1;
+    double *signal2 = numeros2;
     cuentaP25 = 0;
     campo = 0;
     for (int i = 0; i < 1000; i++) {

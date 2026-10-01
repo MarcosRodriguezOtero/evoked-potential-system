@@ -1,22 +1,23 @@
 #include <stdio.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
 #include <stdlib.h>
-#include <math.h>
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
-#include "hal/adc_types.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 #include "driver/i2c_master.h"   // para i2c_new_master_bus() y i2c_master_transmit()
 #include "esp_log.h"             
 #include "signal_processing.h"
 
 #define ADC_CHANNEL ADC_CHANNEL_4   // Canal ADC4 (A4, consulta el mapeo en tu placa)
-#define ADC_WIDTH ADC_WIDTH_BIT_12  // Resolución de 12 bits (0-4095)
-#define ADC_ATTEN ADC_ATTEN_DB_11   // Atenuación 11 dB (rango 0-3.3V)
-#define DEFAULT_VREF 1100           // Valor de referencia de voltaje (mV)
+#define ADC_WIDTH ADC_BITWIDTH_12
+#define ADC_ATTEN ADC_ATTEN_DB_12
 #define SAMPLING_FREQUENCY 1000     // Frecuencia de muestreo (Hz)
 
 #define I2C_SDA_PIN 8
@@ -57,18 +58,34 @@ void stim_send_to_dac(uint16_t value) {
  
  
 // Variables globales
-static esp_adc_cal_characteristics_t *adc_chars;
-float numeros1[1000];  // Almacén para los valores convertidos
-float numeros2[1000];
+static adc_oneshot_unit_handle_t adc1_handle = NULL;
+static adc_cali_handle_t adc_cali_handle = NULL;
+static bool adc_calibrated = false;
+double numeros1[1000];  // Almacén para los valores convertidos
+double numeros2[1000];
 double t[1000];       // Tiempo para cada muestra
 
     
 // Función para inicializar el ADC
-void init_adc() { 
-    adc1_config_width(ADC_WIDTH);
-    adc1_config_channel_atten(ADC_CHANNEL, ADC_ATTEN);
-    adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH, DEFAULT_VREF, adc_chars);
+void init_adc(void) {
+    adc_oneshot_unit_init_cfg_t init_config = {
+        .unit_id = ADC_UNIT_1,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config, &adc1_handle));
+
+    adc_oneshot_chan_cfg_t channel_config = {
+        .bitwidth = ADC_WIDTH,
+        .atten = ADC_ATTEN,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL, &channel_config));
+
+    adc_cali_curve_fitting_config_t cali_config = {
+        .unit_id = ADC_UNIT_1,
+        .chan = ADC_CHANNEL,
+        .atten = ADC_ATTEN,
+        .bitwidth = ADC_WIDTH,
+    };
+    adc_calibrated = (adc_cali_create_scheme_curve_fitting(&cali_config, &adc_cali_handle) == ESP_OK);
 }
 
 // Tarea para leer y muestrear la señal
@@ -79,17 +96,23 @@ for (int i = 0; i < 100; i++) {
   //int i = 0;
  //while (true) {
         // Leer el valor crudo del ADC
-        uint32_t adc_raw = adc1_get_raw(ADC_CHANNEL);
+        int adc_raw = 0;
+        int voltage = 0;
+        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, ADC_CHANNEL, &adc_raw));
 
         // Convertir a milivoltios
-        uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_raw, adc_chars);
+        if (adc_calibrated) {
+            ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc_cali_handle, adc_raw, &voltage));
+        } else {
+            voltage = adc_raw;
+        }
 
         // Guardar en los arrays para el algoritmo
-        numeros1[i] = (float)voltage;  // Guardar en numeros1 en mV
-        numeros2[i] = (float)voltage;  // Guardar en numeros2 en mV
+        numeros1[i] = (double)voltage;  // Guardar en numeros1 en mV
+        numeros2[i] = (double)voltage;  // Guardar en numeros2 en mV
 
         // Imprimir el valor crudo y el voltaje (solo para depuración)
-        printf("ADC Raw: %" PRIu32 "\tVoltage: %" PRIu32 "mV\n", adc_raw, voltage);
+        printf("ADC Raw: %d\tVoltage: %dmV\n", adc_raw, voltage);
 
         // Esperar el siguiente muestreo
         vTaskDelay(delay);
